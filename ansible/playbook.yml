@@ -1,0 +1,31 @@
+- name: Deploy FastAPI Application
+  hosts: web_servers
+  become: yes
+
+  tasks:
+    - name: Update and upgrade apt packages
+      apt:
+        update_cache: yes
+        upgrade: yes
+
+    - name: Install Docker
+      apt:
+        name: docker.io
+        state: present
+
+    - name: Install Docker Compose
+      get_url:
+        url: https://github.com/docker/compose/releases/download/v2.25.0/docker-compose-linux-x86_64
+        dest: /usr/local/bin/docker-compose
+        mode: '0755'
+
+    - name: Copy application files
+      copy:
+        src: ../
+        dest: /opt/fastapi-app
+        remote_src: no
+
+    - name: Build and run FastAPI Docker container
+      command: docker-compose up -d
+      args:
+        chdir: /opt/fastapi-app
